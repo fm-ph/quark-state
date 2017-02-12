@@ -116,7 +116,6 @@ class State {
 
   _parseStateQuery (query) {
     const splittedQuery = query.split('.')
-    let objPathSegments = null
 
     return {
       container: this._containers[splittedQuery[0]],
