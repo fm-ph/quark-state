@@ -1,17 +1,12 @@
 import test from 'ava'
 
-import States from '../src/index'
+import State from '../src/index'
 
-test.beforeEach(t => {
-  // t.context.simple = new Simple()
-})
-
-test('Set container', t => {
+test('Initialize a container', t => {
   const initObj = {
     message: 'hello world'
   }
 
-  States.initContainer('TEST', initObj)
-
-  t.is(States.containers['TEST'], initObj)
+  State.initContainer('TEST', initObj)
+  t.is(State.get('TEST'), initObj)
 })
