@@ -10,24 +10,27 @@ import isEquals from 'lodash.isequal'
  *
  * @author Patrick Heng <hengpatrick.pro@gmail.com>
  * @author Fabien Motte <contact@fabienmotte.com>
- *
  */
 class State {
-
   /**
    * Creates an instance of Signal
    *
    * @constructor
    */
   constructor () {
-    this._containers = {}
+    /**
+     * @type object
+     * @private
+     */
+    this._containers = []
   }
 
   /**
-   * Get a value from State
+   * Get a value
    *
    * @param {string} query Query string
-   * @returns
+   *
+   * @returns {any} Value
    */
   get (query) {
     const { container, splittedQuery } = this._parseStateQuery(query)
@@ -52,8 +55,7 @@ class State {
    *
    * @param {string} query Query string
    * @param {any} value Value to set
-   * @param {boolean} [forced=false] Flag for overwrite object
-   *
+   * @param {boolean} [forced=false] Flag to overwrite an object
    */
   set (query, value, forced = false) {
     const { container, containerId, splittedQuery } = this._parseStateQuery(query)
@@ -80,12 +82,11 @@ class State {
 
       target = target[p]
 
-      // Dispatch signal on change
-
       let signalId = containerId
       for (let j = 1; j <= i; j++) {
         signalId += `_${splittedQuery[j]}`
       }
+
       if (typeof container.signals[signalId] !== 'undefined') {
         if (!isEquals(oldVal, target)) {
           container.signals[signalId].dispatch(oldVal, target)
@@ -97,11 +98,11 @@ class State {
   /**
    * Clear all containers
    */
-
   clear () {
     for (let containerId in this._containers) {
       this.destroyContainer(containerId)
     }
+
     this._containers = {}
   }
 
@@ -110,6 +111,8 @@ class State {
    *
    * @param {string} query Query string
    * @param {function} callback Callback
+   *
+   * @throws {TypeError} Second argument must be a Function
    */
   onChange (query, callback) {
     if (typeof callback !== 'function') {
@@ -136,13 +139,15 @@ class State {
    *
    * @param {string} query Query string
    * @param {function} callback Callback
+   *
+   * @throws {TypeError} Second argument must be a Function
    */
   removeChangeCallback (query, callback) {
-    const { container } = this._parseStateQuery(query)
-
     if (typeof callback !== 'function') {
       throw new TypeError('Signal.removeChangeCallback() : Second argument must be a Function')
     }
+
+    const { container } = this._parseStateQuery(query)
 
     if (typeof container.signals[query] !== 'undefined') {
       container.signals[query].remove(callback)
@@ -152,8 +157,8 @@ class State {
   /**
    * Initialize a container
    *
-   * @param {string} containerId ContainerId
-   * @param {Object} value Object to set for initialize the container
+   * @param {string} containerId Container id
+   * @param {object} value Object to initialize the container
    */
   initContainer (containerId, value) {
     this._containers[containerId] = value
@@ -163,7 +168,7 @@ class State {
   /**
    * Destroy a container
    *
-   * @param {string} containerId ContainerId
+   * @param {string} containerId Container id
    */
   destroyContainer (containerId) {
     if (typeof this._containers[containerId] !== 'undefined') {
@@ -179,12 +184,15 @@ class State {
 
   /**
    * Parse state query
+   *
    * @private
+   *
    * @param {string} query Query string
-   * @property {object} container Container.
-   * @property {string} containerId ContainerId.
-   * @property {prop} container Container.
-   * @property {array} splittedQuery SplittedQuery.
+   *
+   * @property {object} container Container
+   * @property {string} containerId ContainerId
+   * @property {prop} container Container
+   * @property {array} splittedQuery SplittedQuery
    */
   _parseStateQuery (query) {
     const splittedQuery = query.split('.')
