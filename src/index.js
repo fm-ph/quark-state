@@ -1,7 +1,6 @@
 import Signal from 'quark-signal'
 
 import isEqual from 'lodash.isequal'
-import omit from 'lodash.omit'
 import cloneDeep from 'lodash.clonedeep'
 
 /**
@@ -44,7 +43,7 @@ class State {
       throw new Error('State.get() : Cannot get a value from a container that does not exist')
     }
 
-    let value = container
+    let value = container.tree
 
     if (splittedQuery.length > 1) {
       for (let i = 1, l = splittedQuery.length; i < l; i++) {
@@ -54,11 +53,6 @@ class State {
           break
         }
       }
-    }
-
-    // If it is a container, omit 'signals' property
-    if (splittedQuery.length === 1) {
-      return omit(value, 'signals')
     }
 
     return value
@@ -80,27 +74,29 @@ class State {
       throw new Error('State.set() : Cannot set a value on a container that does not exist')
     }
 
-    let target = this._containers
-    for (let i = 0, l = splittedQuery.length; i < l; i++) {
-      const p = splittedQuery[i]
-      const oldVal = target[p]
+    let target = container.tree
+    const slicedQuery = splittedQuery.slice(1)
 
-      if (typeof target[p] !== 'object') {
-        target[p] = {}
+    for (let i = 0, l = slicedQuery.length; i < l; i++) {
+      const prop = slicedQuery[i]
+      const oldVal = target[prop]
+
+      if (typeof target[prop] !== 'object' && target[prop] !== null) {
+        target[prop] = {}
       }
 
-      if (i === splittedQuery.length - 1) {
+      if (i === slicedQuery.length - 1) {
         if (typeof oldVal === 'undefined' || typeof value !== 'object' || value === null || forced) {
-          target[p] = value
+          target[prop] = value
         } else {
-          target[p] = {
+          target[prop] = {
             ...oldVal,
             ...value
           }
         }
       }
 
-      target = target[p]
+      target = target[prop]
 
       let signalId = containerId
       for (let j = 1; j <= i; j++) {
@@ -206,7 +202,9 @@ class State {
       throw new TypeError('State.initContainer() : Second argument must be an Object')
     }
 
-    this._containers[containerId] = cloneDeep(value)
+    this._containers[containerId] = {}
+
+    this._containers[containerId].tree = cloneDeep(value)
     this._containers[containerId].signals = {}
   }
 
