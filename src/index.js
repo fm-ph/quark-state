@@ -1,5 +1,5 @@
 import Signal from 'quark-signal'
-import isEquals from 'lodash.isequal'
+import isEqual from 'lodash.isequal'
 
 /**
  * State class
@@ -13,7 +13,7 @@ import isEquals from 'lodash.isequal'
  */
 class State {
   /**
-   * Creates an instance of Signal
+   * Creates an instance of State
    *
    * @constructor
    */
@@ -41,7 +41,7 @@ class State {
       for (let i = 1, l = splittedQuery.length; i < l; i++) {
         value = value[splittedQuery[i]]
 
-        if (value === undefined || value === null) {
+        if (typeof value === 'undefined' || value === null) {
           break
         }
       }
@@ -88,7 +88,7 @@ class State {
       }
 
       if (typeof container.signals[signalId] !== 'undefined') {
-        if (!isEquals(oldVal, target)) {
+        if (!isEqual(oldVal, target)) {
           container.signals[signalId].dispatch(oldVal, target)
         }
       }
@@ -116,7 +116,7 @@ class State {
    */
   onChange (query, callback) {
     if (typeof callback !== 'function') {
-      throw new TypeError('Signal.onChange() : Second argument must be a Function')
+      throw new TypeError('State.onChange() : Second argument must be a Function')
     }
 
     const { container, containerId, splittedQuery } = this._parseStateQuery(query)
@@ -144,7 +144,7 @@ class State {
    */
   removeChangeCallback (query, callback) {
     if (typeof callback !== 'function') {
-      throw new TypeError('Signal.removeChangeCallback() : Second argument must be a Function')
+      throw new TypeError('State.removeChangeCallback() : Second argument must be a Function')
     }
 
     const { container } = this._parseStateQuery(query)
