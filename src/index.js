@@ -51,7 +51,6 @@ class State {
         value = value[splittedQuery[i]]
 
         if (typeof value === 'undefined' || value === null) {
-          // @todo Throw an error if the value does not exist ?
           break
         }
       }
@@ -199,9 +198,14 @@ class State {
    *
    * @param {string} containerId Container id
    * @param {object} value Object to initialize the container
+   *
+   * @throws {TypeError} Second argument must be an Object
    */
   initContainer (containerId, value) {
-    // @todo Check if the value is an object, otherwise throw an error
+    if (value === null || typeof value !== 'object') {
+      throw new TypeError('State.initContainer() : Second argument must be an Object')
+    }
+
     this._containers[containerId] = cloneDeep(value)
     this._containers[containerId].signals = {}
   }

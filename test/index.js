@@ -19,6 +19,12 @@ test('initialize a container', t => {
   t.deepEqual(State.get('USER'), fixtureUser)
 })
 
+test('initialize a container with bad type value throws an error', t => {
+  const error = t.throws(() => State.initContainer('TEST', null), TypeError)
+
+  t.is(error.message, 'State.initContainer() : Second argument must be an Object')
+})
+
 /**
  * destroyContainer method
  */
@@ -27,7 +33,7 @@ test('destroy a container', t => {
   t.false(State.has('USER'))
 })
 
-test('destroy a container that does not exist', t => {
+test('destroy a container that does not exist throws an error', t => {
   const error = t.throws(() => State.destroyContainer('DOES_NOT_EXIST'), Error)
 
   t.is(error.message, 'State.destroyContainer() : Cannot destroy a container that does not exist')
@@ -78,7 +84,7 @@ test('set an object prop that already exists (forced)', t => {
 /**
  * get method
  */
-test('get a prop from a container that does not exist', t => {
+test('get a prop from a container that does not exist throws an error', t => {
   const error = t.throws(() => State.get('DOES_NOT_EXIST.prop'), Error)
 
   t.is(error.message, 'State.get() : Cannot get a value from a container that does not exist')
@@ -87,7 +93,7 @@ test('get a prop from a container that does not exist', t => {
 /**
  * set method
  */
-test('set a prop on a container that does not exist', t => {
+test('set a prop on a container that does not exist throws an error', t => {
   const error = t.throws(() => State.set('DOES_NOT_EXIST.prop', true), Error)
 
   t.is(error.message, 'State.set() : Cannot set a value on a container that does not exist')
