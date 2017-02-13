@@ -1,12 +1,34 @@
 import Signal from 'quark-signal'
 import isEquals from 'lodash.isequal'
 
+/**
+ * State class
+ *
+ * @class
+ *
+ * @license {@link https://opensource.org/licenses/MIT|MIT}
+ *
+ * @author Patrick Heng <hengpatrick.pro@gmail.com>
+ * @author Fabien Motte <contact@fabienmotte.com>
+ *
+ */
 class State {
 
+  /**
+   * Creates an instance of Signal
+   *
+   * @constructor
+   */
   constructor () {
     this._containers = {}
   }
 
+  /**
+   * Get a value from State
+   *
+   * @param {string} query Query string
+   * @returns
+   */
   get (query) {
     const { container, splittedQuery } = this._parseStateQuery(query)
 
@@ -25,6 +47,14 @@ class State {
     return value
   }
 
+  /**
+   * Set a value in State
+   *
+   * @param {string} query Query string
+   * @param {any} value Value to set
+   * @param {boolean} [forced=false] Flag for overwrite object
+   *
+   */
   set (query, value, forced = false) {
     const { container, containerId, splittedQuery } = this._parseStateQuery(query)
 
@@ -64,6 +94,23 @@ class State {
     }
   }
 
+  /**
+   * Clear all containers
+   */
+
+  clear () {
+    for (let containerId in this._containers) {
+      this.destroyContainer(containerId)
+    }
+    this._containers = {}
+  }
+
+  /**
+   * Add a callback on value change
+   *
+   * @param {string} query Query string
+   * @param {function} callback Callback
+   */
   onChange (query, callback) {
     const { container, containerId, splittedQuery } = this._parseStateQuery(query)
 
@@ -84,6 +131,12 @@ class State {
     container.signals[signalId].add(callback)
   }
 
+  /**
+   * Remove callback on Change
+   *
+   * @param {string} query Query string
+   * @param {function} callback Callback
+   */
   removeChangeCallback (query, callback) {
     const { container } = this._parseStateQuery(query)
 
@@ -96,11 +149,22 @@ class State {
     }
   }
 
+  /**
+   * Initialize a container
+   *
+   * @param {string} containerId ContainerId
+   * @param {Object} value Object to set for initialize the container
+   */
   initContainer (containerId, value) {
     this._containers[containerId] = value
     this._containers[containerId].signals = {}
   }
 
+  /**
+   * Destroy a container
+   *
+   * @param {string} containerId ContainerId
+   */
   destroyContainer (containerId) {
     if (typeof this._containers[containerId] !== 'undefined') {
       for (let signalProp in this._containers[containerId].signals) {
@@ -113,13 +177,21 @@ class State {
     }
   }
 
+  /**
+   * Parse state query
+   * @private
+   * @param {string} query Query string
+   * @property {object} container Container.
+   * @property {string} containerId ContainerId.
+   * @property {prop} container Container.
+   * @property {array} splittedQuery SplittedQuery.
+   */
   _parseStateQuery (query) {
     const splittedQuery = query.split('.')
 
     return {
       container: this._containers[splittedQuery[0]],
       containerId: splittedQuery[0],
-      prop: splittedQuery[1],
       splittedQuery
     }
   }
