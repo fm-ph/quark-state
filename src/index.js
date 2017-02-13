@@ -1,5 +1,8 @@
 import Signal from 'quark-signal'
+
 import isEqual from 'lodash.isequal'
+import omit from 'lodash.omit'
+import cloneDeep from 'lodash.clonedeep'
 
 /**
  * State class
@@ -31,9 +34,15 @@ class State {
    * @param {string} query Query string
    *
    * @returns {any} Value
+   *
+   * @throws {Error} Cannot get a value from a container that does not exist
    */
   get (query) {
     const { container, splittedQuery } = this._parseStateQuery(query)
+
+    if (typeof container === 'undefined') {
+      throw new Error('State.get() : Cannot get a value from a container that does not exist')
+    }
 
     let value = container
 
@@ -42,23 +51,35 @@ class State {
         value = value[splittedQuery[i]]
 
         if (typeof value === 'undefined' || value === null) {
+          // @todo throw an error if the value does not exist ?
           break
         }
       }
+    }
+
+    // If it is a container, omit 'signals' property
+    if (splittedQuery.length === 1) {
+      return omit(value, 'signals')
     }
 
     return value
   }
 
   /**
-   * Set a value in State
+   * Set a value
    *
    * @param {string} query Query string
    * @param {any} value Value to set
    * @param {boolean} [forced=false] Flag to overwrite an object
+   *
+   * @throws {Error} Cannot set a value on a container that does not exist
    */
   set (query, value, forced = false) {
     const { container, containerId, splittedQuery } = this._parseStateQuery(query)
+
+    if (typeof container === 'undefined') {
+      throw new Error('State.set() : Cannot set a value on a container that does not exist')
+    }
 
     let target = this._containers
     for (let i = 0, l = splittedQuery.length; i < l; i++) {
@@ -74,7 +95,7 @@ class State {
           target[p] = value
         } else {
           target[p] = {
-            ...target,
+            ...oldVal,
             ...value
           }
         }
@@ -161,7 +182,7 @@ class State {
    * @param {object} value Object to initialize the container
    */
   initContainer (containerId, value) {
-    this._containers[containerId] = value
+    this._containers[containerId] = cloneDeep(value)
     this._containers[containerId].signals = {}
   }
 
@@ -169,17 +190,21 @@ class State {
    * Destroy a container
    *
    * @param {string} containerId Container id
+   *
+   * @throws {Error} Cannot destroy a container that does not exist
    */
   destroyContainer (containerId) {
-    if (typeof this._containers[containerId] !== 'undefined') {
-      for (let signalProp in this._containers[containerId].signals) {
-        this._containers[containerId].signals[signalProp].removeAll()
-        this._containers[containerId].signals[signalProp] = null
-      }
-
-      this._containers[containerId] = null
-      delete this._containers[containerId]
+    if (typeof this._containers[containerId] === 'undefined') {
+      throw new Error('State.destroyContainer() : Cannot destroy a container that does not exist')
     }
+
+    for (let signalProp in this._containers[containerId].signals) {
+      this._containers[containerId].signals[signalProp].removeAll()
+      this._containers[containerId].signals[signalProp] = null
+    }
+
+    this._containers[containerId] = null
+    delete this._containers[containerId]
   }
 
   /**
