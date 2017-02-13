@@ -71,7 +71,6 @@
     ]
   },
   "dependencies": {
-    "ava": "^0.18.1",
     "lodash.isequal": "^4.5.0",
     "quark-signal": "^1.1.0"
   }
