@@ -51,15 +51,14 @@ class State {
       target = target[p]
 
       // Dispatch signal on change
-      let signalId = containerId
-      for (let j = 0; j < i; j++) {
-        signalId += `_${splittedQuery[i]}`
 
-        console.log(signalId)
-        if (typeof container.signals[signalId] !== 'undefined') {
-          if (!isEquals(oldVal, target)) {
-            container.signals[signalId].dispatch(oldVal, target)
-          }
+      let signalId = containerId
+      for (let j = 1; j <= i; j++) {
+        signalId += `_${splittedQuery[j]}`
+      }
+      if (typeof container.signals[signalId] !== 'undefined') {
+        if (!isEquals(oldVal, target)) {
+          container.signals[signalId].dispatch(oldVal, target)
         }
       }
     }
