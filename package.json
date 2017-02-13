@@ -49,15 +49,15 @@
       "es2015"
     ],
     "plugins": [
-      "add-module-exports"
+      "add-module-exports",
+      "transform-object-rest-spread"
     ],
     "ignore": "test.js",
     "env": {
       "development": {
         "sourceMaps": "inline",
         "plugins": [
-          "transform-runtime",
-          "transform-object-rest-spread"
+          "transform-runtime"
         ]
       }
     }
