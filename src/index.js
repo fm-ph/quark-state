@@ -112,6 +112,10 @@ class State {
    * @param {function} callback Callback
    */
   onChange (query, callback) {
+    if (typeof callback !== 'function') {
+      throw new TypeError('Signal.onChange() : Second argument must be a Function')
+    }
+
     const { container, containerId, splittedQuery } = this._parseStateQuery(query)
 
     let signalId = containerId
@@ -122,10 +126,6 @@ class State {
 
     if (typeof container.signals[query] === 'undefined') {
       container.signals[signalId] = new Signal()
-    }
-
-    if (typeof callback !== 'function') {
-      throw new TypeError('Signal.onChange() : Second argument must be a Function')
     }
 
     container.signals[signalId].add(callback)
