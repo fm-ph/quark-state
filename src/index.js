@@ -190,7 +190,7 @@ class State {
    * @param {string} query Query string
    *
    * @property {object} container Container
-   * @property {string} containerId ContainerId
+   * @property {string} containerId Container id
    * @property {prop} container Container
    * @property {array} splittedQuery SplittedQuery
    */
