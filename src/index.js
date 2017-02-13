@@ -117,6 +117,25 @@ class State {
   }
 
   /**
+   * Has a value
+   *
+   * @param {string} query Query string
+   *
+   * @returns {boolean} True if a value is found, false otherwise
+   */
+  has (query) {
+    const { container } = this._parseStateQuery(query)
+
+    if (typeof container === 'undefined') {
+      return false
+    }
+
+    const value = this.get(query)
+
+    return (typeof value !== 'undefined' && value !== null)
+  }
+
+  /**
    * Clear all containers
    */
   clear () {
