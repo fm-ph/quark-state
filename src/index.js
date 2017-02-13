@@ -51,7 +51,7 @@ class State {
         value = value[splittedQuery[i]]
 
         if (typeof value === 'undefined' || value === null) {
-          // @todo throw an error if the value does not exist ?
+          // @todo Throw an error if the value does not exist ?
           break
         }
       }
@@ -201,6 +201,7 @@ class State {
    * @param {object} value Object to initialize the container
    */
   initContainer (containerId, value) {
+    // @todo Check if the value is an object, otherwise throw an error
     this._containers[containerId] = cloneDeep(value)
     this._containers[containerId].signals = {}
   }
