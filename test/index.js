@@ -71,7 +71,7 @@ test('set an object prop that already exists (merge)', t => {
   })
 })
 
-test('set an object prop that already exists (forced)', t => {
+test('set an object prop that already exists (overwrite)', t => {
   State.set('USER.location', {
     'latitude': 10
   }, true)
@@ -198,24 +198,30 @@ test('add a change callback on a container that does not exist throws an error',
  * removeChangeCallback method
  */
 test('remove a change callback on a prop', t => {
-  const cb = (oldVal, newVal) => { }
+  const cb = (oldVal, newVal) => { t.fail() }
   State.onChange('LOADER.loaded', cb)
 
+  t.is(State._containers['LOADER'].signals['LOADER_loaded']._listeners.length, 1)
   State.removeChangeCallback('LOADER.loaded', cb)
+  t.is(State._containers['LOADER'].signals['LOADER_loaded']._listeners.length, 0)
 })
 
 test('remove a change callback on a deep prop', t => {
-  const cb = (oldVal, newVal) => { }
+  const cb = (oldVal, newVal) => { t.fail() }
   State.onChange('USER.location.latitude', cb)
 
+  t.is(State._containers['USER'].signals['USER_location_latitude']._listeners.length, 1)
   State.removeChangeCallback('USER.location.latitude', cb)
+  t.is(State._containers['USER'].signals['USER_location_latitude']._listeners.length, 0)
 })
 
 test('remove a change callback on a container', t => {
-  const cb = (oldVal, newVal) => { }
+  const cb = (oldVal, newVal) => { t.fail() }
   State.onChange('USER', cb)
 
+  t.is(State._containers['USER'].signals['USER']._listeners.length, 1)
   State.removeChangeCallback('USER', cb)
+  t.is(State._containers['USER'].signals['USER']._listeners.length, 0)
 })
 
 test('remove a change callback with a bad type throws a type error', t => {
