@@ -63,11 +63,11 @@ class State {
    *
    * @param {string} query Query string
    * @param {any} value Value to set
-   * @param {boolean} [forced=false] Flag to overwrite an object
+   * @param {boolean} [overwrite=false] Flag to overwrite an object
    *
    * @throws {Error} Cannot set a value on a container that does not exist
    */
-  set (query, value, forced = false) {
+  set (query, value, overwrite = false) {
     const { container, containerId, splittedQuery } = this._parseStateQuery(query)
 
     if (typeof container === 'undefined') {
@@ -86,7 +86,7 @@ class State {
       }
 
       if (i === slicedQuery.length - 1) {
-        if (typeof oldVal === 'undefined' || typeof value !== 'object' || value === null || forced) {
+        if (typeof oldVal === 'undefined' || typeof value !== 'object' || value === null || overwrite) {
           target[prop] = value
         } else {
           target[prop] = {
