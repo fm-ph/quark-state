@@ -99,14 +99,14 @@ class State {
       target = target[prop]
 
       let signalId = containerId
-      for (let j = 1; j <= i; j++) {
-        signalId += `_${splittedQuery[j]}`
-      }
-
-      if (typeof container.signals[signalId] !== 'undefined') {
-        if (!isEqual(oldVal, target)) {
-          container.signals[signalId].dispatch(oldVal, target)
+      for (let j = 0; j <= slicedQuery.length; j++) {
+        if (typeof container.signals[signalId] !== 'undefined') {
+          if (!isEqual(oldVal, target)) {
+            container.signals[signalId].dispatch(oldVal, target)
+          }
         }
+
+        signalId += `_${slicedQuery[j]}`
       }
     }
   }
@@ -148,6 +148,7 @@ class State {
    * @param {function} callback Callback
    *
    * @throws {TypeError} Second argument must be a Function
+   * @throws {Error} Cannot add a change callback on a container that does not exist
    */
   onChange (query, callback) {
     if (typeof callback !== 'function') {
@@ -156,13 +157,17 @@ class State {
 
     const { container, containerId, splittedQuery } = this._parseStateQuery(query)
 
+    if (typeof container === 'undefined') {
+      throw new Error('State.onChange() : Cannot add a change callback on a container that does not exist')
+    }
+
     let signalId = containerId
 
     for (let i = 1, l = splittedQuery.length; i < l; i++) {
       signalId += `_${splittedQuery[i]}`
     }
 
-    if (typeof container.signals[query] === 'undefined') {
+    if (typeof container.signals[signalId] === 'undefined') {
       container.signals[signalId] = new Signal()
     }
 
@@ -170,12 +175,14 @@ class State {
   }
 
   /**
-   * Remove callback on Change
+   * Remove callback on change
    *
    * @param {string} query Query string
    * @param {function} callback Callback
    *
    * @throws {TypeError} Second argument must be a Function
+   * @throws {Error} Cannot remove a change callback on a container that does not exist
+   * @throws {Error} No signal found to remove a change callback with query : 'CONTAINER.query'
    */
   removeChangeCallback (query, callback) {
     if (typeof callback !== 'function') {
@@ -184,9 +191,17 @@ class State {
 
     const { container } = this._parseStateQuery(query)
 
-    if (typeof container.signals[query] !== 'undefined') {
-      container.signals[query].remove(callback)
+    if (typeof container === 'undefined') {
+      throw new Error('State.removeChangeCallback() : Cannot remove a change callback on a container that does not exist')
     }
+
+    const signalId = query.replace(/\./g, '_')
+
+    if (typeof container.signals[signalId] === 'undefined' || ! (container.signals[signalId] instanceof Signal)) {
+      throw new Error(`State.removeChangeCallback() : No signal found to remove a change callback with query : '${query}'`)
+    }
+
+    container.signals[signalId].remove(callback)
   }
 
   /**
@@ -239,9 +254,15 @@ class State {
    * @property {object} container Container
    * @property {string} containerId Container id
    * @property {prop} container Container
-   * @property {array} splittedQuery SplittedQuery
+   * @property {array} splittedQuery Splitted query
+   * 
+   * @throws {TypeError} Query argument must be a string
    */
   _parseStateQuery (query) {
+    if(typeof query !== 'string') {
+      throw new TypeError('State : Query argument must be a string')
+    }
+
     const splittedQuery = query.split('.')
 
     return {
