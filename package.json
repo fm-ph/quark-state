@@ -14,7 +14,9 @@
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "keywords": [
-    "quark"
+    "quark",
+    "state",
+    "singleton"
   ],
   "author": "fm_ph",
   "contributors": [
