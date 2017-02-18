@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Home - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="State.html">State</a><ul class='methods'><li data-type='method'><a href="State.html#clear">clear</a></li><li data-type='method'><a href="State.html#destroyContainer">destroyContainer</a></li><li data-type='method'><a href="State.html#get">get</a></li><li data-type='method'><a href="State.html#has">has</a></li><li data-type='method'><a href="State.html#initContainer">initContainer</a></li><li data-type='method'><a href="State.html#onChange">onChange</a></li><li data-type='method'><a href="State.html#removeChangeCallback">removeChangeCallback</a></li><li data-type='method'><a href="State.html#set">set</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+
+    
+
+
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+    <section class="readme">
+        <article><h1>quark-state</h1><p><a href="http://travis-ci.org/fm-ph/quark-state"><img src="https://img.shields.io/travis/fm-ph/quark-state/master.svg?style=flat-square" alt="build status"></a>
+<a href="https://nodejs.org/api/documentation.html#documentation_stability_index"><img src="https://img.shields.io/badge/stability-stable-brightgreen.svg?style=flat-square" alt="stability"></a>
+<a href="https://npmjs.org/package/quark-state"><img src="https://img.shields.io/npm/v/quark-state.svg?style=flat-square" alt="npm version"></a>
+<a href="https://github.com/feross/standard"><img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square" alt="js-standard-style"></a>
+<a href="https://github.com/semantic-release/semantic-release"><img src="https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg?style=flat-square" alt="semantic-release"></a></p>
+<p>Simple state manager based on <a href="https://en.wikipedia.org/wiki/Singleton_pattern"><strong>Singleton</strong></a> design pattern.</p>
+<p><strong><em>This package is part of <code>quark</code> framework but it can be used independently.</em></strong></p>
+<h2>Installation</h2><pre class="prettyprint source lang-sh"><code>npm install quark-state --save</code></pre><h2>Usage</h2><h3>Basic</h3><p>Initialize a container and set/get a prop.</p>
+<pre class="prettyprint source lang-js"><code>import State from 'quark-state'
+
+const initialUserState = {
+  'name': 'John Doe',
+  'age': 36,
+  'location': {
+    'latitude': 34.564756,
+    'longitude': 32.804872
+  }
+}
+
+// Initialize a container
+State.initContainer('USER', initialUserState)
+
+// Get a prop from a container
+const name = State.get('USER.name') // = 'John Doe'
+
+// Set a prop on a container
+State.set('USER.age', 40)</code></pre><h3>Container</h3><h4>Init a container</h4><pre class="prettyprint source lang-js"><code>import State from 'quark-state'
+
+const initialContainerState = {}
+State.initContainer('CONTAINER', initialContainerState)</code></pre><h4>Destroy a container</h4><pre class="prettyprint source lang-js"><code>import State from 'quark-state'
+
+State.destroyContainer('CONTAINER')</code></pre><h3>Clear</h3><p>Clear the State by destroying all containers</p>
+<pre class="prettyprint source lang-js"><code>import State from 'quark-state'
+
+const initialContainerState = {}
+State.initContainer('CONTAINER', initialContainerState)
+
+State.clear()</code></pre><h3>Set</h3><h4>Set a (deep) prop</h4><pre class="prettyprint source lang-js"><code>import State from 'quark-state'
+
+const initialContainerState = {
+  'deep': {
+    'prop': true
+  }
+}
+State.initContainer('CONTAINER', initialContainerState)
+
+State.set('CONTAINER.deep.prop', false)</code></pre><h4>Set an object prop (merge)</h4><pre class="prettyprint source lang-js"><code>import State from 'quark-state'
+
+const initialContainerState = {
+  'deep': {
+    'prop': {
+      'integer': 10,
+      'boolean': true
+    }
+  }
+}
+State.initContainer('CONTAINER', initialContainerState)
+
+// By default, it will merge the two objects
+State.set('CONTAINER.deep.prop', {
+  'integer': 20,
+  'string': 'foo'
+})</code></pre><h4>Set an object prop (overwrite)</h4><pre class="prettyprint source lang-js"><code>import State from 'quark-state'
+
+const initialContainerState = {
+  'deep': {
+    'prop': {
+      'integer': 10,
+      'boolean': true
+    }
+  }
+}
+State.initContainer('CONTAINER', initialContainerState)
+
+// If you set the third argument to true, it will overwrite the prop value
+State.set('CONTAINER.deep.prop', { 'integer': 20 }, true)</code></pre><h3>Get</h3><pre class="prettyprint source lang-js"><code>import State from 'quark-state'
+
+const initialContainerState = {
+  'boolean': true
+}
+State.initContainer('CONTAINER', initialContainerState)
+
+State.get('CONTAINER.boolean') // = true</code></pre><h3>Has</h3><p>Check if the given query exists (container or prop)</p>
+<pre class="prettyprint source lang-js"><code>import State from 'quark-state'
+
+const initialContainerState = {
+  'string': 'foo'
+}
+State.initContainer('CONTAINER', initialContainerState)
+
+State.has('CONTAINER') // = true
+State.has('CONTAINER.foo') // = true
+State.has('CONTAINER.doesNotExist') // = false</code></pre><h3>On change</h3><h4>Add</h4><p>When a prop is modified, call a callback with old and new values</p>
+<pre class="prettyprint source lang-js"><code>import State from 'quark-state'
+
+const initialContainerState = {
+  'string': 'foo',
+  'deep': {
+    'prop': true
+  }
+}
+State.initContainer('CONTAINER', initialContainerState)
+
+// When a prop is modified, callback is called
+State.onChange('CONTAINER.string', (oldVal, newVal) => { }) // oldVal = 'foo', newVal = 'bar'
+State.set('CONTAINER.string', 'bar')
+
+// When a deep prop is modified, it also triggers parent callback
+State.onChange('CONTAINER', (oldVal, newVal) => { }) // oldVal = true, newVal = false
+State.set('CONTAINER.deep.prop', false)</code></pre><h4>Remove</h4><pre class="prettyprint source lang-js"><code>import State from 'quark-state'
+
+const initialContainerState = {
+  'string': 'foo',
+  'deep': {
+    'prop': true
+  }
+}
+State.initContainer('CONTAINER', initialContainerState)
+
+const callback = (oldVal, newVal) => { } // Won't be trigger
+
+State.onChange('CONTAINER.string', callback)
+State.removeChangeCallback('CONTAINER.string', callback)
+
+State.set('CONTAINER.string', 'bar')</code></pre><h2>API</h2><p>See <a href="https://fm-ph.github.io/quark-state/">https://fm-ph.github.io/quark-state/</a></p>
+<h2>Build</h2><p>To build the sources with <code>babel</code> in <code>./lib</code> directory :</p>
+<pre class="prettyprint source lang-sh"><code>npm run build</code></pre><h2>Documentation</h2><p>To generate the <code>JSDoc</code> :</p>
+<pre class="prettyprint source lang-sh"><code>npm run docs</code></pre><p>To generate the documentation and deploy on <code>gh-pages</code> branch :</p>
+<pre class="prettyprint source lang-sh"><code>npm run docs:deploy</code></pre><h2>Testing</h2><p>To run the tests, first clone the repository and install its dependencies :</p>
+<pre class="prettyprint source lang-sh"><code>git clone https://github.com/fm_ph/quark-state.git
+cd quark-state
+npm install</code></pre><p>Then, run the tests :</p>
+<pre class="prettyprint source lang-sh"><code>npm test</code></pre><p>To watch (test-driven development) :</p>
+<pre class="prettyprint source lang-sh"><code>npm run test:watch</code></pre><p>For coverage :</p>
+<pre class="prettyprint source lang-sh"><code>npm run test:coverage</code></pre><h2>License</h2><p>MIT <a href="LICENSE.md">License</a> © <a href="http://hengpatrick.fr/">Patrick Heng</a> <a href="http://fabienmotte.com/">Fabien Motte</a></p></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Sat Feb 18 2017 01:12:27 GMT+0100 (CET) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

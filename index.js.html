@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>index.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="State.html">State</a><ul class='methods'><li data-type='method'><a href="State.html#clear">clear</a></li><li data-type='method'><a href="State.html#destroyContainer">destroyContainer</a></li><li data-type='method'><a href="State.html#get">get</a></li><li data-type='method'><a href="State.html#has">has</a></li><li data-type='method'><a href="State.html#initContainer">initContainer</a></li><li data-type='method'><a href="State.html#onChange">onChange</a></li><li data-type='method'><a href="State.html#removeChangeCallback">removeChangeCallback</a></li><li data-type='method'><a href="State.html#set">set</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">index.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import Signal from 'quark-signal'
+
+import isEqual from 'lodash.isequal'
+import cloneDeep from 'lodash.clonedeep'
+
+/**
+ * State class
+ *
+ * @class
+ *
+ * @license {@link https://opensource.org/licenses/MIT|MIT}
+ *
+ * @author Patrick Heng &lt;hengpatrick.pro@gmail.com>
+ * @author Fabien Motte &lt;contact@fabienmotte.com>
+ *
+ * @example
+ * const initialContainerState = {
+ *   'foo': 'bar'
+ * }
+ *
+ * State.initContainer('CONTAINER', initialContainerState)
+ * const foo = State.get('CONTAINER.foo') // = 'bar'
+ */
+class State {
+  /**
+   * Creates an instance of State
+   *
+   * @constructor
+   */
+  constructor () {
+    /**
+     * @type object
+     * @private
+     */
+    this._containers = []
+  }
+
+  /**
+   * Get a value
+   *
+   * @param {string} query Query string
+   *
+   * @returns {any} Value
+   *
+   * @throws {Error} Cannot get a value from a container that does not exist
+   */
+  get (query) {
+    const { container, splittedQuery } = this._parseStateQuery(query)
+
+    if (typeof container === 'undefined') {
+      throw new Error('State.get() : Cannot get a value from a container that does not exist')
+    }
+
+    let value = container.tree
+
+    if (splittedQuery.length > 1) {
+      for (let i = 1, l = splittedQuery.length; i &lt; l; i++) {
+        value = value[splittedQuery[i]]
+
+        if (typeof value === 'undefined' || value === null) {
+          break
+        }
+      }
+    }
+
+    return value
+  }
+
+  /**
+   * Set a value
+   *
+   * @param {string} query Query string
+   * @param {any} value Value to set
+   * @param {boolean} [overwrite=false] Flag to overwrite an object
+   *
+   * @throws {Error} Cannot set a value on a container that does not exist
+   */
+  set (query, value, overwrite = false) {
+    const { container, containerId, splittedQuery } = this._parseStateQuery(query)
+
+    if (typeof container === 'undefined') {
+      throw new Error('State.set() : Cannot set a value on a container that does not exist')
+    }
+
+    let target = container.tree
+    const slicedQuery = splittedQuery.slice(1)
+
+    for (let i = 0, l = slicedQuery.length; i &lt; l; i++) {
+      const prop = slicedQuery[i]
+      const oldVal = target[prop]
+
+      if (typeof target[prop] !== 'object' &amp;&amp; target[prop] !== null) {
+        target[prop] = {}
+      }
+
+      if (i === slicedQuery.length - 1) {
+        if (typeof oldVal === 'undefined' || typeof value !== 'object' || value === null || overwrite) {
+          target[prop] = value
+        } else {
+          target[prop] = {
+            ...oldVal,
+            ...value
+          }
+        }
+      }
+
+      target = target[prop]
+
+      let signalId = containerId
+      for (let j = 0; j &lt;= slicedQuery.length; j++) {
+        if (typeof container.signals[signalId] !== 'undefined') {
+          if (!isEqual(oldVal, target)) {
+            container.signals[signalId].dispatch(oldVal, target)
+          }
+        }
+
+        signalId += `_${slicedQuery[j]}`
+      }
+    }
+  }
+
+  /**
+   * Has a value
+   *
+   * @param {string} query Query string
+   *
+   * @returns {boolean} True if a value is found, false otherwise
+   */
+  has (query) {
+    const { container } = this._parseStateQuery(query)
+
+    if (typeof container === 'undefined') {
+      return false
+    }
+
+    const value = this.get(query)
+
+    return (typeof value !== 'undefined' &amp;&amp; value !== null)
+  }
+
+  /**
+   * Clear all containers
+   */
+  clear () {
+    for (let containerId in this._containers) {
+      this.destroyContainer(containerId)
+    }
+
+    this._containers = {}
+  }
+
+  /**
+   * Add a callback on value change
+   *
+   * @param {string} query Query string
+   * @param {function} callback Callback
+   *
+   * @throws {TypeError} Second argument must be a Function
+   * @throws {Error} Cannot add a change callback on a container that does not exist
+   */
+  onChange (query, callback) {
+    if (typeof callback !== 'function') {
+      throw new TypeError('State.onChange() : Second argument must be a Function')
+    }
+
+    const { container, containerId, splittedQuery } = this._parseStateQuery(query)
+
+    if (typeof container === 'undefined') {
+      throw new Error('State.onChange() : Cannot add a change callback on a container that does not exist')
+    }
+
+    let signalId = containerId
+
+    for (let i = 1, l = splittedQuery.length; i &lt; l; i++) {
+      signalId += `_${splittedQuery[i]}`
+    }
+
+    if (typeof container.signals[signalId] === 'undefined') {
+      container.signals[signalId] = new Signal()
+    }
+
+    container.signals[signalId].add(callback)
+  }
+
+  /**
+   * Remove callback on change
+   *
+   * @param {string} query Query string
+   * @param {function} callback Callback
+   *
+   * @throws {TypeError} Second argument must be a Function
+   * @throws {Error} Cannot remove a change callback on a container that does not exist
+   * @throws {Error} No signal found to remove a change callback with query : 'CONTAINER.query'
+   */
+  removeChangeCallback (query, callback) {
+    if (typeof callback !== 'function') {
+      throw new TypeError('State.removeChangeCallback() : Second argument must be a Function')
+    }
+
+    const { container } = this._parseStateQuery(query)
+
+    if (typeof container === 'undefined') {
+      throw new Error('State.removeChangeCallback() : Cannot remove a change callback on a container that does not exist')
+    }
+
+    const signalId = query.replace(/\./g, '_')
+
+    if (typeof container.signals[signalId] === 'undefined' || ! (container.signals[signalId] instanceof Signal)) {
+      throw new Error(`State.removeChangeCallback() : No signal found to remove a change callback with query : '${query}'`)
+    }
+
+    container.signals[signalId].remove(callback)
+  }
+
+  /**
+   * Initialize a container
+   *
+   * @param {string} containerId Container id
+   * @param {object} value Object to initialize the container
+   *
+   * @throws {TypeError} Second argument must be an Object
+   */
+  initContainer (containerId, value) {
+    if (value === null || typeof value !== 'object') {
+      throw new TypeError('State.initContainer() : Second argument must be an Object')
+    }
+
+    this._containers[containerId] = {}
+
+    this._containers[containerId].tree = cloneDeep(value)
+    this._containers[containerId].signals = {}
+  }
+
+  /**
+   * Destroy a container
+   *
+   * @param {string} containerId Container id
+   *
+   * @throws {Error} Cannot destroy a container that does not exist
+   */
+  destroyContainer (containerId) {
+    if (typeof this._containers[containerId] === 'undefined') {
+      throw new Error('State.destroyContainer() : Cannot destroy a container that does not exist')
+    }
+
+    for (let signalProp in this._containers[containerId].signals) {
+      this._containers[containerId].signals[signalProp].removeAll()
+      this._containers[containerId].signals[signalProp] = null
+    }
+
+    this._containers[containerId] = null
+    delete this._containers[containerId]
+  }
+
+  /**
+   * Parse state query
+   *
+   * @private
+   *
+   * @param {string} query Query string
+   *
+   * @property {object} container Container
+   * @property {string} containerId Container id
+   * @property {prop} container Container
+   * @property {array} splittedQuery Splitted query
+   * 
+   * @throws {TypeError} Query argument must be a string
+   */
+  _parseStateQuery (query) {
+    if(typeof query !== 'string') {
+      throw new TypeError('State : Query argument must be a string')
+    }
+
+    const splittedQuery = query.split('.')
+
+    return {
+      container: this._containers[splittedQuery[0]],
+      containerId: splittedQuery[0],
+      splittedQuery
+    }
+  }
+}
+
+export default new State()
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Sat Feb 18 2017 01:12:27 GMT+0100 (CET) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
