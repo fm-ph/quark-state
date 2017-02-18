@@ -12,6 +12,8 @@ ___This package is part of `quark` framework but it can be used independently.__
 
 ## Installation
 
+[![NPM](https://nodei.co/npm/quark-state.png)](https://www.npmjs.com/package/quark-state)
+
 ```sh
 npm install quark-state --save
 ```
