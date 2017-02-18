@@ -12,6 +12,14 @@ import cloneDeep from 'lodash.clonedeep'
  *
  * @author Patrick Heng <hengpatrick.pro@gmail.com>
  * @author Fabien Motte <contact@fabienmotte.com>
+ *
+ * @example
+ * const initialContainerState = {
+ *   'foo': 'bar'
+ * }
+ *
+ * State.initContainer('CONTAINER', initialContainerState)
+ * const foo = State.get('CONTAINER.foo') // = 'bar'
  */
 class State {
   /**
