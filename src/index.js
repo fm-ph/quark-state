@@ -205,7 +205,7 @@ class State {
 
     const signalId = query.replace(/\./g, '_')
 
-    if (typeof container.signals[signalId] === 'undefined' || ! (container.signals[signalId] instanceof Signal)) {
+    if (typeof container.signals[signalId] === 'undefined' || !(container.signals[signalId] instanceof Signal)) {
       throw new Error(`State.removeChangeCallback() : No signal found to remove a change callback with query : '${query}'`)
     }
 
@@ -263,11 +263,11 @@ class State {
    * @property {string} containerId Container id
    * @property {prop} container Container
    * @property {array} splittedQuery Splitted query
-   * 
+   *
    * @throws {TypeError} Query argument must be a string
    */
   _parseStateQuery (query) {
-    if(typeof query !== 'string') {
+    if (typeof query !== 'string') {
       throw new TypeError('State : Query argument must be a string')
     }
 
