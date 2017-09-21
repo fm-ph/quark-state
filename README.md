@@ -1,4 +1,4 @@
-# quark-state
+# [<img src="logo.png" alt="quark-state" width="200">](https://github.com/fm-ph/quark-state)
 
 [![build status][travis-image]][travis-url]
 [![stability][stability-image]][stability-url]
