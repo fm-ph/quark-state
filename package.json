@@ -10,7 +10,7 @@
     "test": "ava",
     "test:watch": "ava --watch --verbose",
     "test:coverage": "nyc npm test",
-    "prepublish": "npm test && npm run build",
+    "prepublishOnly": "npm test && npm run build",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "keywords": [
